@@ -4,10 +4,6 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
 
-  // Load pdf-parse from node_modules at runtime instead of bundling it —
-  // it ships a pdf.js worker file that bundlers don't emit correctly.
-  serverExternalPackages: ['pdf-parse'],
-
   async headers() {
     return [
       {
