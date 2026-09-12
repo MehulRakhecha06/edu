@@ -12,6 +12,9 @@
     "ai:test": "cd ai-service && python3 -m pytest tests/ -v",
     "smoke-test": "bash scripts/smoke-test.sh"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@huggingface/inference": "^4.13.28",
     "@supabase/supabase-js": "^2.116.0",
