@@ -1,0 +1,34 @@
+{
+  "name": "aimmers-nepal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EduMock AI - AI-powered mock test platform for schools (demo)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "seed": "node scripts/seed.js",
+    "ai": "cd ai-service && python3 -m uvicorn app.main:app --port 8000 --reload",
+    "ai:test": "cd ai-service && python3 -m pytest tests/ -v",
+    "smoke-test": "bash scripts/smoke-test.sh"
+  },
+  "dependencies": {
+    "@huggingface/inference": "^4.13.28",
+    "@supabase/supabase-js": "^2.116.0",
+    "bcryptjs": "^3.0.3",
+    "canvas-confetti": "^1.9.4",
+    "lucide-react": "^1.44.0",
+    "mammoth": "^1.12.2",
+    "next": "16.3.4",
+    "next-auth": "5.0.0-beta.32",
+    "pdf-parse": "^2.4.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.3.3"
+  }
+}

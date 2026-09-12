@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---- page entrance ---------------------------------------------------- */
+main {
+  animation: fade-in-up 0.35s ease-out both;
+}
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  main {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- tactile feedback -------------------------------------------------- */
+button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* subtle card lift — add `card-lift` to hoverable cards */
+.card-lift {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -14px rgb(15 23 42 / 0.22);
+}
+
+/* ---- skeleton loading --------------------------------------------------- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  @apply rounded-lg bg-slate-200;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.65),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+/* gentle bob for the landing-page floating cards */
+@keyframes float-y {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+@keyframes float-y-alt {
+  from {
+    transform: translateY(-4px) rotate(1deg);
+  }
+  to {
+    transform: translateY(5px) rotate(1deg);
+  }
+}
+@keyframes glow-pulse {
+  from {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.7;
+    transform: scale(1.08);
+  }
+}
+
+.animate-float {
+  animation: float-y 3.2s ease-in-out infinite alternate;
+}
+.animate-float-alt {
+  animation: float-y-alt 3.8s ease-in-out infinite alternate;
+}
+.animate-glow {
+  animation: glow-pulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ---- selection & scrollbar --------------------------------------------- */
+::selection {
+  background: #c7d2fe;
+  color: #1e1b4b;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid #f8fafc;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ---- consistent focus rings --------------------------------------------- */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid theme(--color-indigo-500);
+  outline-offset: 1px;
+}
