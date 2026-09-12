@@ -21,7 +21,12 @@ import { extractText } from '@/lib/pdf';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+// Vercel's serverless platform rejects request bodies over ~4.5 MB BEFORE
+// the app runs (413 FUNCTION_PAYLOAD_TOO_LARGE) — so on Vercel the app caps
+// uploads below that with a CLEAR message instead of a cryptic failure.
+// Self-hosted keeps the full 10 MB.
+const IS_VERCEL = Boolean(process.env.VERCEL);
+const MAX_FILE_BYTES = IS_VERCEL ? 4.4 * 1024 * 1024 : 10 * 1024 * 1024;
 const ALLOWED_TYPES = [
   'application/pdf',
   'text/plain',
@@ -123,7 +128,14 @@ export async function POST(request) {
     );
   }
   if (file.size > MAX_FILE_BYTES) {
-    return NextResponse.json({ error: 'File is larger than 10 MB.' }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: IS_VERCEL
+          ? 'This file is too large for Vercel hosting — uploads there are limited to ~4.5 MB by the platform. Split the PDF, export only the question pages, or compress it. (Self-hosted installs accept up to 10 MB.)'
+          : 'File is larger than 10 MB.',
+      },
+      { status: 400 }
+    );
   }
 
   try {
