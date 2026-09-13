@@ -235,7 +235,7 @@ UPDATE users SET role = 'ADMIN'   WHERE email = 'you@school.edu';
 
 | Mode | Where | Accounts |
 | --- | --- | --- |
-| Demo (no env) | automatic | `mehulrakhecha@gmail.com / Admin@123` (admin) · `tanisharakhecha2@gmail.com / Teacher@123` (teacher) · `student@edumock.local / Student@123` (student) |
+| Demo (no env) | automatic | `xyz@gmail.com / Admin@123` (admin) · `abc2@gmail.com / Teacher@123` (teacher) · `student@edumock.local / Student@123` (student) |
 | Supabase | `npm run seed` creates the admin | `.env.local` presets `SEED_ADMIN_EMAIL=mehulrakhecha@gmail.com` — set the password there, then create the teacher from the Admin page |
 
 ## Common errors and the fix
