@@ -41,8 +41,8 @@ Demo mode gives you a seeded in-memory database with three accounts
 
 | Role | Email | Password |
 | --- | --- | --- |
-| ADMIN | mehulrakhecha@gmail.com | Admin@123 |
-| TEACHER | tanisharakhecha2@gmail.com | Teacher@123 |
+| ADMIN | xyz@gmail.com | Admin@123 |
+| TEACHER | abc@gmail.com | Teacher@123 |
 | STUDENT | student@edumock.local | Student@123 |
 
 The login page has quick-fill buttons for all three.
