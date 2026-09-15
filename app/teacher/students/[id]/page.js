@@ -79,45 +79,78 @@ export default async function StudentHistoryPage({ params }) {
             This student hasn&apos;t taken any tests yet.
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-3 font-semibold">Test</th>
-                  <th className="px-4 py-3 font-semibold">Score</th>
-                  <th className="px-4 py-3 font-semibold">Result</th>
-                  <th className="px-4 py-3 font-semibold hidden sm:table-cell">When</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((h) => (
-                  <tr key={h.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3 font-medium text-slate-800 max-w-[240px] truncate">
-                      {h.isPractice && (
-                        <span className="mr-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full px-2 py-0.5 align-middle">
-                          PRACTICE
-                        </span>
-                      )}
-                      {h.testTitle}
-                    </td>
-                    <td className="px-4 py-3 text-slate-700">
-                      {h.score}/{h.total} <span className="text-slate-400">({h.percentage}%)</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {h.isPractice ? (
-                        <span className="text-slate-400">—</span>
-                      ) : h.passed ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">PASSED</span>
-                      ) : (
-                        <span className="text-xs font-bold text-rose-700 bg-rose-100 rounded-full px-2 py-0.5">FAILED</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{formatDateTime(h.finishedAt)}</td>
+          <>
+            {/* Mobile: one card per attempt */}
+            <div className="sm:hidden space-y-3">
+              {history.map((h) => (
+                <div key={h.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
+                  <p className="font-medium text-slate-800 text-sm break-words leading-snug">
+                    {h.isPractice && (
+                      <span className="mr-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full px-2 py-0.5 align-middle">
+                        PRACTICE
+                      </span>
+                    )}
+                    {h.testTitle}
+                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-slate-600">
+                      <span className="font-bold text-slate-800">{h.score}/{h.total}</span>
+                      <span className="text-slate-400"> · {h.percentage}%</span>
+                    </span>
+                    {h.isPractice ? (
+                      <span className="text-slate-400 text-xs font-semibold">practice</span>
+                    ) : h.passed ? (
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">PASSED</span>
+                    ) : (
+                      <span className="text-xs font-bold text-rose-700 bg-rose-100 rounded-full px-2 py-0.5">FAILED</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400">{formatDateTime(h.finishedAt)}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: the table */}
+            <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <th className="px-4 py-3 font-semibold">Test</th>
+                    <th className="px-4 py-3 font-semibold">Score</th>
+                    <th className="px-4 py-3 font-semibold">Result</th>
+                    <th className="px-4 py-3 font-semibold">When</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {history.map((h) => (
+                    <tr key={h.id} className="border-t border-slate-100">
+                      <td className="px-4 py-3 font-medium text-slate-800 max-w-[240px] truncate">
+                        {h.isPractice && (
+                          <span className="mr-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full px-2 py-0.5 align-middle">
+                            PRACTICE
+                          </span>
+                        )}
+                        {h.testTitle}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {h.score}/{h.total} <span className="text-slate-400">({h.percentage}%)</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {h.isPractice ? (
+                          <span className="text-slate-400">—</span>
+                        ) : h.passed ? (
+                          <span className="text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">PASSED</span>
+                        ) : (
+                          <span className="text-xs font-bold text-rose-700 bg-rose-100 rounded-full px-2 py-0.5">FAILED</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">{formatDateTime(h.finishedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </main>
     </>
