@@ -71,60 +71,106 @@ export default async function TeacherStudentsPage() {
             No students yet — students register themselves on the sign-up page.
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3 font-semibold">Student</th>
-                    <th className="px-4 py-3 font-semibold">Tests taken</th>
-                    <th className="px-4 py-3 font-semibold">Average score</th>
-                    <th className="px-4 py-3 font-semibold">Passed</th>
-                    <th className="px-4 py-3 font-semibold hidden sm:table-cell">Last activity</th>
-                    <th className="px-4 py-3 font-semibold text-right">Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.id} className="border-t border-slate-100">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-slate-800">{r.name}</p>
-                        <p className="text-xs text-slate-500">{r.email}</p>
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{r.testsTaken}</td>
-                      <td className="px-4 py-3">
-                        {r.avg === null ? (
-                          <span className="text-slate-400">—</span>
-                        ) : (
-                          <span
-                            className={`font-semibold ${
-                              r.avg >= 40 ? 'text-emerald-600' : 'text-rose-600'
-                            }`}
-                          >
-                            {r.avg}%
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">
+          <>
+            {/* Mobile: one card per student */}
+            <div className="sm:hidden space-y-3">
+              {rows.map((r) => (
+                <div key={r.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+                  <div>
+                    <p className="font-medium text-slate-800 text-sm break-words">{r.name}</p>
+                    <p className="text-xs text-slate-500 break-all">{r.email}</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
+                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Taken</span>
+                      <span className="text-slate-800 font-bold">{r.testsTaken}</span>
+                    </span>
+                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
+                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Average</span>
+                      {r.avg === null ? (
+                        <span className="text-slate-400 font-bold">—</span>
+                      ) : (
+                        <span className={`font-bold ${r.avg >= 40 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {r.avg}%
+                        </span>
+                      )}
+                    </span>
+                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
+                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Passed</span>
+                      <span className="text-slate-800 font-bold">
                         {r.testsTaken === 0 ? '—' : `${r.passed}/${r.testsTaken}`}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">
-                        {r.lastActivity ? formatDate(r.lastActivity) : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/teacher/students/${r.id}`}
-                          className="text-indigo-600 hover:text-indigo-800 font-semibold text-xs whitespace-nowrap"
-                        >
-                          View history →
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Last activity: {r.lastActivity ? formatDate(r.lastActivity) : '—'}
+                  </p>
+                  <Link
+                    href={`/teacher/students/${r.id}`}
+                    className="block text-center text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2.5 py-2.5"
+                  >
+                    View history →
+                  </Link>
+                </div>
+              ))}
             </div>
-          </div>
+
+            {/* Desktop: the table */}
+            <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-3 font-semibold">Student</th>
+                      <th className="px-4 py-3 font-semibold">Tests taken</th>
+                      <th className="px-4 py-3 font-semibold">Average score</th>
+                      <th className="px-4 py-3 font-semibold">Passed</th>
+                      <th className="px-4 py-3 font-semibold">Last activity</th>
+                      <th className="px-4 py-3 font-semibold text-right">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => (
+                      <tr key={r.id} className="border-t border-slate-100">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-800">{r.name}</p>
+                          <p className="text-xs text-slate-500">{r.email}</p>
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">{r.testsTaken}</td>
+                        <td className="px-4 py-3">
+                          {r.avg === null ? (
+                            <span className="text-slate-400">—</span>
+                          ) : (
+                            <span
+                              className={`font-semibold ${
+                                r.avg >= 40 ? 'text-emerald-600' : 'text-rose-600'
+                              }`}
+                            >
+                              {r.avg}%
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {r.testsTaken === 0 ? '—' : `${r.passed}/${r.testsTaken}`}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {r.lastActivity ? formatDate(r.lastActivity) : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/teacher/students/${r.id}`}
+                            className="text-indigo-600 hover:text-indigo-800 font-semibold text-xs whitespace-nowrap"
+                          >
+                            View history →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
         )}
       </main>
     </>
