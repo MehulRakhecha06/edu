@@ -6,6 +6,20 @@ import Link from 'next/link';
 import { formatDate } from '@/lib/format';
 import { FileImage, FileType, FileText } from 'lucide-react';
 
+function FileIcon({ kind }) {
+  return (
+    <span className="inline-flex w-6 h-6 mr-1 items-center justify-center rounded-md bg-slate-100 text-slate-500 align-middle shrink-0">
+      {kind === 'image' || kind === 'pdf-scan' ? (
+        <FileImage className="w-3.5 h-3.5" aria-hidden />
+      ) : kind === 'docx' ? (
+        <FileType className="w-3.5 h-3.5" aria-hidden />
+      ) : (
+        <FileText className="w-3.5 h-3.5" aria-hidden />
+      )}
+    </span>
+  );
+}
+
 export default function DocumentsTable({ documents }) {
   const router = useRouter();
   const [busyId, setBusyId] = useState(null);
@@ -76,15 +90,99 @@ export default function DocumentsTable({ documents }) {
         </p>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      {/* ------------------------------------------------------------- *
+       *  MOBILE: one card per document — everything stacked, actions  *
+       *  as a comfortable 2-column grid of tappable buttons.           *
+       * ------------------------------------------------------------- */}
+      <div className="sm:hidden space-y-3">
+        {documents.map((d) => (
+          <div key={d.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <FileIcon kind={d.fileKind} />
+              <p className="font-medium text-slate-800 text-sm break-all leading-snug">
+                {d.filename}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              <span className="inline-flex px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                {d.subject || 'General'}
+              </span>
+              {d.chapter && (
+                <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                  {d.chapter}
+                </span>
+              )}
+              {d.questionCount > 0 ? (
+                <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                  {d.questionCount} ready
+                </span>
+              ) : (
+                <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                  not extracted
+                </span>
+              )}
+              {d.pendingCount > 0 && (
+                <span className="inline-flex px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                  {d.pendingCount} to review
+                </span>
+              )}
+            </div>
+
+            <p className="text-xs text-slate-400">Uploaded {formatDate(d.uploadedAt)}</p>
+
+            {/* Actions: full-width, two per row, thumb-friendly */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => extract(d.id)}
+                disabled={busyId === d.id}
+                className="text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2.5 py-2.5 disabled:opacity-50"
+              >
+                {busyId === d.id
+                  ? 'Working…'
+                  : d.questionCount > 0
+                    ? 'Re-extract'
+                    : 'Extract questions'}
+              </button>
+              {(d.questionCount > 0 || d.pendingCount > 0) && (
+                <Link
+                  href={`/teacher/documents/${d.id}`}
+                  className="text-center text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg px-2.5 py-2.5"
+                >
+                  {d.pendingCount > 0 ? `Review (${d.pendingCount})` : 'Review questions'}
+                </Link>
+              )}
+              {d.questionCount > 0 && (
+                <Link
+                  href={`/teacher/tests?doc=${d.id}`}
+                  className="text-center text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-2.5 py-2.5"
+                >
+                  Create test
+                </Link>
+              )}
+              <button
+                onClick={() => remove(d.id)}
+                disabled={busyId === d.id}
+                className="text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg px-2.5 py-2.5 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ------------------------------------------------------------- *
+       *  DESKTOP: the table (unchanged apart from the fixed header)   *
+       * ------------------------------------------------------------- */}
+      <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="px-4 py-3 font-semibold">File</th>
               <th className="px-4 py-3 font-semibold">Subject</th>
-              <th className="px-4 py-3 font-semibold">Subject</th>
-              <th className="px-4 py-3 font-semibold">Questions</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Uploaded</th>
+              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Uploaded</th>
               <th className="px-4 py-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
@@ -92,15 +190,7 @@ export default function DocumentsTable({ documents }) {
             {documents.map((d) => (
               <tr key={d.id} className="border-t border-slate-100">
                 <td className="px-4 py-3 font-medium text-slate-800 max-w-[220px] truncate">
-                  <span className="inline-flex w-6 h-6 mr-1 items-center justify-center rounded-md bg-slate-100 text-slate-500 align-middle">
-                    {d.fileKind === 'image' || d.fileKind === 'pdf-scan' ? (
-                      <FileImage className="w-3.5 h-3.5" aria-hidden />
-                    ) : d.fileKind === 'docx' ? (
-                      <FileType className="w-3.5 h-3.5" aria-hidden />
-                    ) : (
-                      <FileText className="w-3.5 h-3.5" aria-hidden />
-                    )}
-                  </span>
+                  <FileIcon kind={d.fileKind} />
                   {d.filename}
                 </td>
                 <td className="px-4 py-3">
@@ -129,9 +219,7 @@ export default function DocumentsTable({ documents }) {
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">
-                  {formatDate(d.uploadedAt)}
-                </td>
+                <td className="px-4 py-3 text-slate-500">{formatDate(d.uploadedAt)}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     <button
