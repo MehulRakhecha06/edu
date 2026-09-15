@@ -76,49 +76,83 @@ export default async function TestDetailPage({ params }) {
               No student has taken this test yet.
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3 font-semibold">Student</th>
-                    <th className="px-4 py-3 font-semibold">Score</th>
-                    <th className="px-4 py-3 font-semibold">Percentage</th>
-                    <th className="px-4 py-3 font-semibold">Result</th>
-                    <th className="px-4 py-3 font-semibold hidden sm:table-cell">Finished</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {testAttempts.map((a) => {
-                    const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
-                    return (
-                      <tr key={a.id} className="border-t border-slate-100">
-                        <td className="px-4 py-3 font-medium text-slate-800">
-                          {userById.get(a.studentId)?.name || 'Unknown student'}
-                        </td>
-                        <td className="px-4 py-3">
-                          {a.score} / {a.total}
-                        </td>
-                        <td className="px-4 py-3">{pct}%</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
-                              pct >= passing
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            {pct >= passing ? 'PASSED' : 'FAILED'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">
-                          {formatDateTime(a.finishedAt)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Mobile: one card per attempt */}
+              <div className="sm:hidden space-y-3">
+                {testAttempts.map((a) => {
+                  const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+                  return (
+                    <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
+                      <p className="font-medium text-slate-800 text-sm break-words leading-snug">
+                        {userById.get(a.studentId)?.name || 'Unknown student'}
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-slate-600">
+                          <span className="font-bold text-slate-800">{a.score} / {a.total}</span>
+                          <span className="text-slate-400"> · </span>
+                          {pct}%
+                        </span>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                            pct >= passing
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {pct >= passing ? 'PASSED' : 'FAILED'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">{formatDateTime(a.finishedAt)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop: the table */}
+              <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-3 font-semibold">Student</th>
+                      <th className="px-4 py-3 font-semibold">Score</th>
+                      <th className="px-4 py-3 font-semibold">Percentage</th>
+                      <th className="px-4 py-3 font-semibold">Result</th>
+                      <th className="px-4 py-3 font-semibold">Finished</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testAttempts.map((a) => {
+                      const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+                      return (
+                        <tr key={a.id} className="border-t border-slate-100">
+                          <td className="px-4 py-3 font-medium text-slate-800">
+                            {userById.get(a.studentId)?.name || 'Unknown student'}
+                          </td>
+                          <td className="px-4 py-3">
+                            {a.score} / {a.total}
+                          </td>
+                          <td className="px-4 py-3">{pct}%</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                                pct >= passing
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : 'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              {pct >= passing ? 'PASSED' : 'FAILED'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {formatDateTime(a.finishedAt)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
 
