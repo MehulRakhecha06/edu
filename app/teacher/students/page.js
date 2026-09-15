@@ -2,176 +2,244 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { formatDateTime } from '@/lib/format';
 import Header from '@/components/Header';
-import { Users } from 'lucide-react';
-import { formatDate } from '@/lib/format';
+import { FileText, Flag, BarChart3, Trophy, Hourglass, Lock, Megaphone } from 'lucide-react';
 
-export const metadata = { title: 'Student progress — Aimmers Nepal' };
+export const metadata = { title: 'Student Dashboard — Aimmers Nepal' };
 
-export default async function TeacherStudentsPage() {
+export default async function StudentPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
-  if (!['TEACHER', 'TEACHERS', 'ADMIN'].includes(session.user.role)) redirect('/unauthorized');
 
-  const [users, attempts, tests] = await Promise.all([
-    db.listUsers(),
-    db.listAttempts(),
+  const [tests, attempts, notices] = await Promise.all([
     db.listTests(),
+    db.listAttemptsByStudent(session.user.id),
+    db.listNotices(),
   ]);
+
   const testById = new Map(tests.map((t) => [t.id, t]));
-  const students = users.filter((u) => (u.role || 'STUDENT') === 'STUDENT');
 
-  const byStudent = new Map();
-  for (const a of attempts) {
-    if (!byStudent.has(a.studentId)) byStudent.set(a.studentId, []);
-    byStudent.get(a.studentId).push(a);
-  }
+  const scores = attempts.filter((a) => a.total > 0).map((a) => a.score / a.total);
+  const average = scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) : null;
+  const best = scores.length > 0 ? Math.round(Math.max(...scores) * 100) : null;
 
-  const rows = students
-    .map((u) => {
-      // practice attempts don't count towards progress statistics
-      const mine = (byStudent.get(u.id) || []).filter((a) => !testById.get(a.testId)?.isPractice);
-      const percentages = mine.filter((a) => a.total > 0).map((a) => (a.score / a.total) * 100);
-      const avg = percentages.length
-        ? Math.round(percentages.reduce((s, v) => s + v, 0) / percentages.length)
-        : null;
-      const passed = mine.filter((a) => {
-        const passing = testById.get(a.testId)?.passingPercentage ?? 40;
-        return a.total > 0 && (a.score / a.total) * 100 >= passing;
-      }).length;
-      const last = mine.slice().sort((x, y) => new Date(y.finishedAt) - new Date(x.finishedAt))[0];
-      return {
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        testsTaken: mine.length,
-        avg,
-        passed,
-        lastActivity: last?.finishedAt || null,
-      };
-    })
-    .sort((a, b) => b.testsTaken - a.testsTaken || a.name.localeCompare(b.name));
+  const stats = [
+    { label: 'Tests available', value: tests.length, Icon: FileText },
+    { label: 'Tests taken', value: attempts.length, Icon: Flag },
+    { label: 'Average score', value: average === null ? '—' : `${average}%`, Icon: BarChart3 },
+    { label: 'Best score', value: best === null ? '—' : `${best}%`, Icon: Trophy },
+  ];
 
   return (
     <>
       <Header user={session.user} />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-            <Users className="w-6 h-6 text-indigo-600" aria-hidden /> Student progress
+          <h1 className="text-2xl font-bold text-slate-900">
+            Hi {session.user.name?.split(' ')[0]} 👋
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            How every student is doing across all your tests (practice attempts excluded from stats).
-            Click a student for their full history.
+            Take a mock test, then read the AI explanation for every question.
           </p>
         </div>
 
-        {rows.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-500">
-            No students yet — students register themselves on the sign-up page.
-          </div>
-        ) : (
-          <>
-            {/* Mobile: one card per student */}
-            <div className="sm:hidden space-y-3">
-              {rows.map((r) => (
-                <div key={r.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
-                  <div>
-                    <p className="font-medium text-slate-800 text-sm break-words">{r.name}</p>
-                    <p className="text-xs text-slate-500 break-all">{r.email}</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
-                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Taken</span>
-                      <span className="text-slate-800 font-bold">{r.testsTaken}</span>
-                    </span>
-                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
-                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Average</span>
-                      {r.avg === null ? (
-                        <span className="text-slate-400 font-bold">—</span>
-                      ) : (
-                        <span className={`font-bold ${r.avg >= 40 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {r.avg}%
-                        </span>
-                      )}
-                    </span>
-                    <span className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
-                      <span className="block text-slate-400 font-semibold uppercase tracking-wide text-[10px]">Passed</span>
-                      <span className="text-slate-800 font-bold">
-                        {r.testsTaken === 0 ? '—' : `${r.passed}/${r.testsTaken}`}
-                      </span>
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Last activity: {r.lastActivity ? formatDate(r.lastActivity) : '—'}
-                  </p>
-                  <Link
-                    href={`/teacher/students/${r.id}`}
-                    className="block text-center text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2.5 py-2.5"
-                  >
-                    View history →
-                  </Link>
+        {/* Notices from teachers */}
+        {notices.length > 0 && (
+          <section>
+            <h2 className="flex items-center gap-2 font-bold text-slate-900 mb-3">
+              <Megaphone className="w-4.5 h-4.5 text-indigo-600" aria-hidden /> Notices
+            </h2>
+            <div className="space-y-3">
+              {notices.slice(0, 3).map((n) => (
+                <div key={n.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                  <p className="font-bold text-slate-900 text-sm">{n.title}</p>
+                  <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{n.body}</p>
+                  <p className="text-xs text-slate-400 mt-1">{formatDateTime(n.createdAt)}</p>
                 </div>
               ))}
             </div>
+          </section>
+        )}
 
-            {/* Desktop: the table */}
-            <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto">
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((s) => (
+            <div key={s.label} className="card-lift bg-white border border-slate-200 rounded-2xl p-5">
+              <span className="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <s.Icon className="w-5 h-5" aria-hidden />
+              </span>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{s.value}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Available tests */}
+        <section>
+          <h2 className="font-bold text-slate-900 mb-3">Available tests</h2>
+          {tests.length === 0 ? (
+            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-10 text-center text-sm text-slate-500">
+              No tests have been published yet — check back soon!
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tests.map((t) => {
+                const now = Date.now();
+                const opens = t.availableFrom ? new Date(t.availableFrom).getTime() : null;
+                const closes = t.availableTo ? new Date(t.availableTo).getTime() : null;
+                const notOpenYet = opens !== null && now < opens;
+                const closed = closes !== null && now > closes;
+                return (
+                <div
+                  key={t.id}
+                  className={`bg-white border rounded-2xl p-5 flex flex-col shadow-sm ${
+                    closed ? 'border-slate-200 opacity-60' : notOpenYet ? 'border-slate-200' : 'border-slate-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-flex w-12 h-12 items-center justify-center rounded-2xl ${
+                      closed
+                        ? 'bg-slate-100 text-slate-400'
+                        : notOpenYet
+                          ? 'bg-amber-50 text-amber-500'
+                          : 'bg-indigo-50 text-indigo-600'
+                    }`}
+                  >
+                    {closed ? (
+                      <Lock className="w-6 h-6" aria-hidden />
+                    ) : notOpenYet ? (
+                      <Hourglass className="w-6 h-6" aria-hidden />
+                    ) : (
+                      <FileText className="w-6 h-6" aria-hidden />
+                    )}
+                  </span>
+                  <h3 className="mt-3 font-bold text-slate-900">
+                    {t.isPractice && (
+                      <span className="mr-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full px-2 py-0.5 align-middle">
+                        PRACTICE
+                      </span>
+                    )}
+                    {t.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {t.questionIds.length} questions · {t.timeLimitMinutes} minutes
+                    {!t.isPractice && (t.maxAttempts ?? 1) !== 1 ? (
+                      t.maxAttempts === 0 ? ' · unlimited retakes' : ` · ${t.maxAttempts} attempts`
+                    ) : null}
+                  </p>
+                  {(notOpenYet || closed) && (
+                    <p className="mt-3 text-xs font-semibold text-slate-500">
+                      {notOpenYet
+                        ? `Opens ${formatDateTime(t.availableFrom)}`
+                        : `Closed ${formatDateTime(t.availableTo)}`}
+                    </p>
+                  )}
+                  {notOpenYet || closed ? (
+                    <span className="mt-4 text-center bg-slate-200 text-slate-400 text-sm font-semibold py-2.5 rounded-lg cursor-not-allowed">
+                      {closed ? 'Test closed' : 'Not open yet'}
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/student/test/${t.id}`}
+                      className="mt-4 text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-lg"
+                    >
+                      Start test →
+                    </Link>
+                  )}
+                </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* History */}
+        <section>
+          <h2 className="font-bold text-slate-900 mb-3">Your past attempts</h2>
+          {attempts.length === 0 ? (
+            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 text-center text-sm text-slate-500">
+              You haven&apos;t taken any tests yet.
+            </div>
+          ) : (
+            <>
+              {/* Mobile: one card per attempt */}
+              <div className="sm:hidden space-y-3">
+                {attempts.map((a) => {
+                  const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+                  const passed = (testById.get(a.testId)?.passingPercentage ?? 40) <= pct;
+                  return (
+                    <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
+                      <p className="font-medium text-slate-800 text-sm break-words leading-snug">
+                        {testById.get(a.testId)?.title || 'Deleted test'}
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-slate-600">
+                          <span className="font-bold text-slate-800">{a.score} / {a.total}</span>
+                          <span className="text-slate-400"> · </span>
+                          {pct}%
+                        </span>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                            passed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {passed ? 'PASSED' : 'FAILED'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">{formatDateTime(a.finishedAt)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop: the table */}
+              <div className="hidden sm:block bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                      <th className="px-4 py-3 font-semibold">Student</th>
-                      <th className="px-4 py-3 font-semibold">Tests taken</th>
-                      <th className="px-4 py-3 font-semibold">Average score</th>
-                      <th className="px-4 py-3 font-semibold">Passed</th>
-                      <th className="px-4 py-3 font-semibold">Last activity</th>
-                      <th className="px-4 py-3 font-semibold text-right">Details</th>
+                      <th className="px-4 py-3 font-semibold">Test</th>
+                      <th className="px-4 py-3 font-semibold">Score</th>
+                      <th className="px-4 py-3 font-semibold">Percentage</th>
+                      <th className="px-4 py-3 font-semibold">Result</th>
+                      <th className="px-4 py-3 font-semibold">Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((r) => (
-                      <tr key={r.id} className="border-t border-slate-100">
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-slate-800">{r.name}</p>
-                          <p className="text-xs text-slate-500">{r.email}</p>
-                        </td>
-                        <td className="px-4 py-3 text-slate-700">{r.testsTaken}</td>
-                        <td className="px-4 py-3">
-                          {r.avg === null ? (
-                            <span className="text-slate-400">—</span>
-                          ) : (
+                    {attempts.map((a) => {
+                      const pct = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+                      return (
+                        <tr key={a.id} className="border-t border-slate-100">
+                          <td className="px-4 py-3 font-medium text-slate-800">
+                            {testById.get(a.testId)?.title || 'Deleted test'}
+                          </td>
+                          <td className="px-4 py-3">
+                            {a.score} / {a.total}
+                          </td>
+                          <td className="px-4 py-3">{pct}%</td>
+                          <td className="px-4 py-3">
                             <span
-                              className={`font-semibold ${
-                                r.avg >= 40 ? 'text-emerald-600' : 'text-rose-600'
+                              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                                (testById.get(a.testId)?.passingPercentage ?? 40) <= pct
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : 'bg-red-100 text-red-700'
                               }`}
                             >
-                              {r.avg}%
+                              {(testById.get(a.testId)?.passingPercentage ?? 40) <= pct ? 'PASSED' : 'FAILED'}
                             </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-slate-700">
-                          {r.testsTaken === 0 ? '—' : `${r.passed}/${r.testsTaken}`}
-                        </td>
-                        <td className="px-4 py-3 text-slate-500">
-                          {r.lastActivity ? formatDate(r.lastActivity) : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/teacher/students/${r.id}`}
-                            className="text-indigo-600 hover:text-indigo-800 font-semibold text-xs whitespace-nowrap"
-                          >
-                            View history →
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {formatDateTime(a.finishedAt)}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </section>
       </main>
     </>
   );
