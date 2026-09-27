@@ -351,8 +351,8 @@ export default function TakeTestPage() {
         </div>
       </div>
 
-      {/* Progress dots */}
-      <div className="flex flex-wrap gap-1.5 mt-4">
+      {/* Progress dots (scrollable when tests are long, e.g. 200 questions) */}
+      <div className="flex flex-wrap gap-1.5 mt-4 max-h-44 overflow-y-auto pr-1">
         {test.questions.map((qq, i) => (
           <button
             key={qq.id}
