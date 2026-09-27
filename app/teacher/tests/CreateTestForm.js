@@ -210,20 +210,20 @@ export default function CreateTestForm({ documents, preselect }) {
               className="block text-sm font-medium text-slate-700 mb-1 flex justify-between"
             >
               <span>Number of questions</span>
-              <span className="text-xs text-slate-400">max {Math.min(100, maxAvailable)}</span>
+              <span className="text-xs text-slate-400">max {Math.min(200, maxAvailable)}</span>
             </label>
             <input
               id="count"
               type="number"
               min={1}
-              max={Math.min(100, maxAvailable)}
+              max={Math.min(200, maxAvailable)}
               required
               value={form.questionCount}
               onChange={set('questionCount')}
               className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
             />
             <p className="text-xs text-slate-500 mt-1">
-              Each question carries <strong>1 mark</strong>. 1–100 questions.
+              Each question carries <strong>1 mark</strong>. 1–200 questions.
             </p>
           </div>
 
