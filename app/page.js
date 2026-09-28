@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
+import { siteUrl } from '@/lib/site';
 import { DEMO_USERS, isDemoMode } from '@/lib/db';
 import {
   Sparkles,
@@ -46,7 +47,26 @@ export default async function HomePage() {
   const demo = isDemoMode();
 
   return (
-    <main className="min-h-screen bg-slate-50/60">
+    <>
+      {/* Structured data for search engines and AI assistants */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Aimmers Nepal',
+          url: siteUrl,
+          description:
+            'Free timed mock tests for students. Teachers upload question banks, students take timed tests, and AI explains every answer.',
+          inLanguage: 'en',
+          audience: {
+            '@type': 'EducationalAudience',
+            educationalRole: 'student',
+          },
+          about: { '@type': 'Thing', name: 'Mock tests and exam preparation' },
+        }) }}
+      />
+      <main className="min-h-screen bg-slate-50/60">
       {/* ---------------------------------------------------------- Nav */}
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <span className="flex items-center gap-2 font-bold text-lg">
@@ -450,5 +470,6 @@ export default async function HomePage() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
