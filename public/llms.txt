@@ -1,0 +1,35 @@
+# Aimmers Nepal
+
+> Free timed mock-test platform for schools and tuition centres in Nepal.
+> Teachers upload question banks (PDF, Word, TXT or photos of papers),
+> students take timed multiple-choice tests, and an AI assistant explains
+> every answer afterwards.
+
+## What this site offers
+
+- Students: timed mock tests with a countdown, instant scores, pass/fail
+  verdicts, AI explanations for every question, and a study assistant that
+  helps with class topics (Math, Science, Physics, Chemistry, Biology,
+  English, Nepali, Social Studies, Computer).
+- Teachers: upload question banks, review and approve extracted questions,
+  create tests (question count, time limit, passing percentage) from one or
+  many banks, and see student results.
+- Data privacy: student data is stored in a private database; assistant
+  chat history is never saved.
+
+## Key public pages
+
+- [Home / landing page](/): overview for students and teachers, demo
+  accounts, how it works.
+- [Sign in](/login): one sign-in page for all roles (students, teachers,
+  admins).
+- [Register](/register): students can create their own account; teacher and
+  admin accounts are created by the school's admin.
+
+## Facts
+
+- Name: Aimmers Nepal
+- Audience: school students (primary), teachers, one admin per school
+- Question format: multiple choice, 1 mark per question, exact wording from
+  the teacher's uploaded document
+- Contact: +977 981-5339848
